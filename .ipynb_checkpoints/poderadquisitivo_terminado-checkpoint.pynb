@@ -1,0 +1,893 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "fb118111-f291-4241-b31a-fc4c84453705",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "import seaborn as sns\n",
+    "import os"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "06db6551-d46e-48be-9a98-ca5577394997",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "os.makedirs(\"datos_poder_adquisitivo\", exist_ok=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "f94f6c5c-dfa6-4e02-99a7-2cd62ef70770",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ruta = \"datos_poder_adquisitivo/anex-IPC-indices-may2026 (1).xlsx\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "f0360c4c-6684-479d-874f-9eb725a25088",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = pd.read_excel(ruta, header=8)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e3186028-e6e2-4972-9e4f-80b482da86e7",
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [],
+   "source": [
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "07efe347-ae6f-4248-87ec-d010a8880437",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_ipc_largo = df.melt(id_vars=\"Mes\", var_name=\"Año\", value_name=\"IPC\")\n",
+    "df_ipc_largo[\"Año\"] = pd.to_numeric(df_ipc_largo[\"Año\"], errors=\"coerce\")\n",
+    "df_ipc_largo = df_ipc_largo.dropna(subset=[\"Año\"])\n",
+    "df_ipc_largo[\"Año\"] = df_ipc_largo[\"Año\"].astype(int)\n",
+    "\n",
+    "condicion1 = df_ipc_largo[\"Año\"] >= 2016\n",
+    "condicion2 = df_ipc_largo[\"Año\"] <= 2025\n",
+    "df_ipc_filtrado = df_ipc_largo[condicion1 & condicion2]\n",
+    "df_ipc_filtrado = df_ipc_filtrado.dropna(subset=[\"IPC\"])\n",
+    "df_ipc_filtrado"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "74eb8af5-5a1c-47b5-b860-98ba92466531",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print(df.shape) \n",
+    "pd.set_option(\"display.max_rows\", None)\n",
+    "df_ipc_filtrado"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "d17c0d7e-1a2d-4c98-ae53-d514f09f2097",
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [],
+   "source": [
+    "ruta_smmlv = \"datos_poder_adquisitivo/mercado laborarl.xlsx\"\n",
+    "df_smmlv = pd.read_excel(ruta_smmlv)\n",
+    "df_smmlv.head(15)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "b545fb4c-6bab-426b-a46f-1a4d9bb7e609",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "xls = pd.ExcelFile(ruta_smmlv)\n",
+    "print(xls.sheet_names)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "778a45dd-3fe8-4449-b4d5-88602e08d45d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_smmlv = pd.read_excel(ruta_smmlv, sheet_name=\"Series de datos\", header=2)\n",
+    "df_smmlv.head(15)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "28154d10-6b90-4ff6-9b9e-8470b284b316",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print(df_smmlv.columns)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "71202d86-d8a8-4dd6-8558-0db817c078d1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_smmlv = df_smmlv.rename(columns={df_smmlv.columns[0]: \"Fecha\"})\n",
+    "df_smmlv[\"Fecha\"] = pd.to_datetime(df_smmlv[\"Fecha\"], errors=\"coerce\")\n",
+    "df_smmlv = df_smmlv.dropna(subset=[\"Fecha\"])\n",
+    "df_smmlv[\"Año\"] = df_smmlv[\"Fecha\"].dt.year\n",
+    "\n",
+    "df_smmlv_filtrado = df_smmlv[(df_smmlv[\"Año\"] >= 2016) & (df_smmlv[\"Año\"] <= 2025)]\n",
+    "df_smmlv_filtrado"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "f694e716-1158-4cff-a7a8-2a6e25d28e9e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_smmlv_filtrado = df_smmlv_filtrado.iloc[:, [0, 5, 2, 1]]\n",
+    "df_smmlv_filtrado.columns = [\"Fecha\", \"Año\", \"Salario minimo mensual\", \"Auxilio de transporte mensual\"]\n",
+    "df_smmlv_filtrado"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "0489b0a3-4093-4c6b-a0f2-e618b834632d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ruta_pobreza = \"datos_poder_adquisitivo/anex-PM-TotalNacional-2025.xlsx\"\n",
+    "xls_pobreza = pd.ExcelFile(ruta_pobreza)\n",
+    "print(xls_pobreza.sheet_names)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "d1f190c7-936e-4067-8297-6b64c1e942fb",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_pobreza_raw = pd.read_excel(ruta_pobreza, sheet_name=\"LP_LI Act.Met.\", header=None)\n",
+    "df_pobreza_raw.head(20)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "3c87a198-80cf-4d8c-abba-200ed13a8a00",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_pobreza_raw.iloc[30:40]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "d5d39c2b-b2df-4bf4-abbf-d29852a86098",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_pobreza = pd.read_excel(ruta_pobreza, sheet_name=\"LP_LI Act.Met.\", header=11)\n",
+    "df_pobreza.head(3)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "020f6fe6-ea94-4587-9268-c70a9d7c0d21",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fila_nacional = df_pobreza[df_pobreza[\"Unnamed: 0\"] == \"Nacional\"]\n",
+    "fila_nacional"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "b17e00f3-0d89-4fe5-b54e-62501cf29021",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "años = list(range(2016, 2026))\n",
+    "fila_nacional_filtrada = fila_nacional[años]\n",
+    "fila_nacional_filtrada"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "000ce7cd-462f-41fa-9300-4bfadbc0f38a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "linea_pobreza = fila_nacional_filtrada.iloc[0]\n",
+    "linea_pobreza_extrema = fila_nacional_filtrada.iloc[1]\n",
+    "\n",
+    "df_pobreza_final = pd.DataFrame({\n",
+    "    \"Año\": años,\n",
+    "    \"Linea_pobreza\": linea_pobreza.values,\n",
+    "    \"Linea_pobreza_extrema\": linea_pobreza_extrema.values\n",
+    "})\n",
+    "df_pobreza_final"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "d339b5e7-0ccf-4722-890c-6a9bce4fa9fb",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ruta_costo_matricula_privada = \"datos_poder_adquisitivo/costo_matricula_universitaria.xlsx\"\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ee8b2405-28ec-4725-9893-8d17e9a6f482",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_matricula = pd.read_excel(ruta_costo_matricula_privada)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "52cc1bef-32fb-4b3f-b9c8-feb589c2b5f1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_matricula.head(2)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "7e688273-5f97-4e51-9919-3641f283bf7e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ruta_costo_matricula_publica = \"datos_poder_adquisitivo/costo_matricula_publica.xlsx\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "00915842-a31a-4c32-9439-e3fb7d05a017",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_matriculapublica = pd.read_excel(ruta_costo_matricula_publica)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "54af8e86-41af-4072-9a9f-761706ece8ea",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_matriculapublica.head(2)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "09c582bb",
+   "metadata": {},
+   "source": [
+    "## Tabla Maestra\n",
+    "\n",
+    "Unimos los seis indicadores en una sola tabla: año a año, de 2016 a 2025.\n",
+    "\n",
+    "Para el IPC usamos el **último mes disponible de cada año**:\n",
+    "- 2016–2025 → Diciembre\n",
+    "\n",
+    "Este valor del IPC representa el nivel de precios al cierre de cada año, que es el que el Gobierno usa como referencia para fijar el salario del año siguiente. Así la comparación es consistente."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "32ca23ab",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Mapa de meses en número (para ordenar y filtrar)\n",
+    "orden_mes = {\n",
+    "    \"Enero\": 1, \"Febrero\": 2, \"Marzo\": 3, \"Abril\": 4,\n",
+    "    \"Mayo\": 5, \"Junio\": 6, \"Julio\": 7, \"Agosto\": 8,\n",
+    "    \"Septiembre\": 9, \"Octubre\": 10, \"Noviembre\": 11, \"Diciembre\": 12\n",
+    "}\n",
+    "df_ipc_filtrado = df_ipc_filtrado.copy()\n",
+    "df_ipc_filtrado[\"Mes_num\"] = df_ipc_filtrado[\"Mes\"].map(orden_mes)\n",
+    "\n",
+    "# Solo hasta 2025 — 2026 tiene IPC parcial (mayo), no comparable\n",
+    "df_ipc_filtrado = df_ipc_filtrado[df_ipc_filtrado[\"Año\"] <= 2025]\n",
+    "\n",
+    "# Último mes disponible por año\n",
+    "ipc_ultimo_mes = (\n",
+    "    df_ipc_filtrado\n",
+    "    .sort_values([\"Año\", \"Mes_num\"])\n",
+    "    .groupby(\"Año\", as_index=False)\n",
+    "    .last()[[\"Año\", \"IPC\", \"Mes\"]]\n",
+    "    .rename(columns={\"Mes\": \"Mes_IPC\"})\n",
+    ")\n",
+    "ipc_ultimo_mes"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "6b2feb90",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Preparar df_smmlv_filtrado con columnas limpias y tipo numérico\n",
+    "df_salario = df_smmlv_filtrado[[\"Año\", \"Salario minimo mensual\", \"Auxilio de transporte mensual\"]]\n",
+    "df_salario[\"Año\"] = df_salario[\"Año\"].astype(int)\n",
+    "df_salario[\"Salario minimo mensual\"] = pd.to_numeric(df_salario[\"Salario minimo mensual\"], errors=\"coerce\")\n",
+    "df_salario[\"Auxilio de transporte mensual\"] = pd.to_numeric(df_salario[\"Auxilio de transporte mensual\"], errors=\"coerce\")\n",
+    "\n",
+    "# Solo hasta 2025 — consistente con el corte del IPC\n",
+    "df_salario = df_salario[df_salario[\"Año\"] <= 2025]\n",
+    "\n",
+    "# Preparar línea de pobreza\n",
+    "df_pob = df_pobreza_final.copy()\n",
+    "df_pob[\"Año\"] = df_pob[\"Año\"].astype(int)\n",
+    "\n",
+    "# Unir todo\n",
+    "df_maestro = (\n",
+    "    df_salario\n",
+    "    .merge(ipc_ultimo_mes, on=\"Año\", how=\"left\")\n",
+    "    .merge(df_pob, on=\"Año\", how=\"left\")\n",
+    ")\n",
+    "\n",
+    "# Renombrar columnas para claridad\n",
+    "df_maestro.columns = [\n",
+    "    \"Año\", \"Salario_nominal\", \"Auxilio_transporte\",\n",
+    "    \"IPC\", \"Mes_IPC\",\n",
+    "    \"Linea_pobreza\", \"Linea_pobreza_extrema\"\n",
+    "]\n",
+    "\n",
+    "df_maestro"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "704b4f3f",
+   "metadata": {},
+   "source": [
+    " Salario Real\n",
+    "\n",
+    "**¿Qué es deflactar?**  \n",
+    "El salario nominal es lo que dice el decreto — pesos del año en curso. El salario real descuenta la inflación para hacer los valores comparables entre años.\n",
+    "\n",
+    "**Fórmula:**\n",
+    "```\n",
+    "Salario_real = Salario_nominal ÷ (IPC ÷ 100)\n",
+    "```\n",
+    "\n",
+    "Usamos IPC base diciembre 2018 = 100. Un salario real de 800.000 en 2016 y en 2025 significa que en ambos años se puede comprar la misma canasta.\n",
+    "\n",
+    "También calculamos:\n",
+    "- **Variación nominal (%)** — cuánto subió el salario en pesos corrientes\n",
+    "- **Variación real (%)** — cuánto subió el poder de compra real"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "45f44749",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# ── CAPA 1: Salario real ──────────────────────────────────────────────────────\n",
+    "df_maestro[\"Salario_real\"] = df_maestro[\"Salario_nominal\"] / (df_maestro[\"IPC\"] / 100)\n",
+    "df_maestro[\"Auxilio_real\"] = df_maestro[\"Auxilio_transporte\"] / (df_maestro[\"IPC\"] / 100)\n",
+    "\n",
+    "# Variaciones interanuales (%)\n",
+    "df_maestro[\"Var_nominal_pct\"] = df_maestro[\"Salario_nominal\"].pct_change() * 100\n",
+    "df_maestro[\"Var_real_pct\"]    = df_maestro[\"Salario_real\"].pct_change() * 100\n",
+    "\n",
+    "cols_capa1 = [\"Año\", \"Salario_nominal\", \"IPC\", \"Mes_IPC\", \"Salario_real\",\n",
+    "              \"Var_nominal_pct\", \"Var_real_pct\"]\n",
+    "\n",
+    "df_maestro[cols_capa1].round(2).rename(\n",
+    "    columns={\"Salario_real\": \"Salario real (precios constantes)\"}\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "663bb9f4",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Resumen 2016 vs 2025\n",
+    "sal_2016 = df_maestro.loc[df_maestro[\"Año\"] == 2016, \"Salario_real\"].values[0]\n",
+    "sal_2025 = df_maestro.loc[df_maestro[\"Año\"] == 2025, \"Salario_real\"].values[0]\n",
+    "cambio_real = ((sal_2025 - sal_2016) / sal_2016) * 100\n",
+    "\n",
+    "print(f\"Salario real 2016: ${sal_2016:,.0f} (precios constantes)\")\n",
+    "print(f\"Salario real 2025: ${sal_2025:,.0f} (precios constantes)\")\n",
+    "print(f\"Cambio acumulado 2016-2025: {cambio_real:+.1f}%\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "474d991c",
+   "metadata": {},
+   "source": [
+    "## Capa 2 — ¿Vivir o Sobrevivir?\n",
+    "\n",
+    "Aquí comparamos lo que la persona **realmente recibe** (salario + auxilio de transporte) contra la **línea de pobreza** oficial del DANE.\n",
+    "\n",
+    "- Si `(Salario + Auxilio) > Línea de pobreza` → la persona no es pobre en términos monetarios\n",
+    "- El **excedente** es lo que le sobra después de cubrir lo básico\n",
+    "\n",
+    "**Nota:** La línea de pobreza está en pesos corrientes de cada año, igual que el salario nominal. Se comparan en términos nominales — no hay que deflactar aquí porque ambas variables ya están en pesos del mismo año.\n",
+    "\n",
+    "El análisis cubre 2016–2025, con la línea de pobreza oficial del DANE disponible para todos esos años. No se incluye 2026 porque el IPC de ese año es parcial (solo hasta mayo)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "5596c7f8",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Calcular Excedente: Ingreso_total - Línea de pobreza\n",
+    "df_maestro[\"Ingreso_total\"] = df_maestro[\"Salario_nominal\"] + df_maestro[\"Auxilio_transporte\"]\n",
+    "df_maestro[\"Excedente\"] = df_maestro[\"Ingreso_total\"] - df_maestro[\"Linea_pobreza\"]\n",
+    "\n",
+    "cols_capa2 = [\"Año\", \"Salario_nominal\", \"Auxilio_transporte\", \"Ingreso_total\",\n",
+    "              \"Linea_pobreza\", \"Excedente\"]\n",
+    "df_maestro[cols_capa2].round(0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "257247aa",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Cuántos años el ingreso estuvo por encima / por debajo de la línea de pobreza\n",
+    "encima = (df_maestro[\"Excedente\"] > 0).sum()\n",
+    "debajo = (df_maestro[\"Excedente\"] <= 0).sum()\n",
+    "print(f\"Años con excedente positivo (sobre línea de pobreza): {encima}\")\n",
+    "print(f\"Años con excedente negativo (bajo línea de pobreza):  {debajo}\")\n",
+    "print()\n",
+    "for _, row in df_maestro[[\"Año\", \"Excedente\"]].iterrows():\n",
+    "    signo = \"✅\" if row[\"Excedente\"] > 0 else \"🔴\"\n",
+    "    print(f\"{signo} {int(row['Año'])}: ${row['Excedente']:,.0f}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d1ef7531",
+   "metadata": {},
+   "source": [
+    "## ¿Alcanza para Estudiar?\n",
+    "\n",
+    "Tomamos el excedente mensual de cada año, lo multiplicamos por 6 (un semestre) y lo comparamos contra los costos de matrícula.\n",
+    "\n",
+    "**Referencias de costo:**\n",
+    "- **Universidad privada — carreras generales:** promedio $8.500.000/semestre\n",
+    "- **Universidad privada — Medicina:** promedio $25.000.000/semestre\n",
+    "- **Universidad pública — Gratuidad (estratos 1-3):** $0/semestre (~97% de estudiantes)\n",
+    "- **Universidad pública — Fuera de gratuidad (estratos 4-6):** promedio $1.200.000/semestre\n",
+    "\n",
+    "El excedente semestral no equivale a \"ahorró todo eso\" — una persona que gana el mínimo tiene otros gastos (arriendo, alimentación de toda la familia, servicios). El ejercicio muestra el **límite teórico** de lo que podría destinar a educación si cubriera todo lo básico justo con la línea de pobreza."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "5cf68ed2",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# ── CAPA 3: Comparación con matrícula ────────────────────────────────────────\n",
+    "\n",
+    "# Costos de matrícula (fijos, datos 2024-2026)\n",
+    "matricula_privada_general  = 8_500_000\n",
+    "matricula_privada_medicina = 25_000_000\n",
+    "matricula_publica_gratuita = 0\n",
+    "matricula_publica_fuera    = 1_200_000\n",
+    "\n",
+    "df_maestro[\"Excedente_semestral\"] = df_maestro[\"Excedente\"] * 6\n",
+    "\n",
+    "df_maestro[\"Alcanza_priv_general\"]  = df_maestro[\"Excedente_semestral\"] >= matricula_privada_general\n",
+    "df_maestro[\"Alcanza_priv_medicina\"] = df_maestro[\"Excedente_semestral\"] >= matricula_privada_medicina\n",
+    "df_maestro[\"Alcanza_pub_fuera\"]     = df_maestro[\"Excedente_semestral\"] >= matricula_publica_fuera\n",
+    "\n",
+    "cols_capa3 = [\"Año\", \"Excedente\", \"Excedente_semestral\",\n",
+    "              \"Alcanza_priv_general\", \"Alcanza_priv_medicina\", \"Alcanza_pub_fuera\"]\n",
+    "df_maestro[cols_capa3].round(0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "336adffe",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Déficit/superávit frente a cada referencia (último año)\n",
+    "fila_2025 = df_maestro[df_maestro[\"Año\"] == 2025].iloc[0]\n",
+    "exc_sem_2025 = fila_2025 [\"Excedente_semestral\"]\n",
+    "\n",
+    "print(\"=== AÑO 2025 ===\")\n",
+    "print(f\"Excedente mensual: ${fila_2025['Excedente']:,.0f}\")\n",
+    "print(f\"Excedente semestral (×6): ${exc_sem_2025:,.0f}\")\n",
+    "print()\n",
+    "for nombre, costo in [\n",
+    "    (\"Pública – Gratuidad\",          matricula_publica_gratuita),\n",
+    "    (\"Pública – Fuera de gratuidad\", matricula_publica_fuera),\n",
+    "    (\"Privada – General\",            matricula_privada_general),\n",
+    "    (\"Privada – Medicina\",           matricula_privada_medicina),\n",
+    "]:\n",
+    "    diferencia = exc_sem_2025 - costo\n",
+    "    icono = \"✅\" if diferencia >= 0 else \"🔴\"\n",
+    "    print(f\"{icono} {nombre}: ${costo:,.0f}  →  diferencia: ${diferencia:,.0f}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "41af5c49",
+   "metadata": {},
+   "source": [
+    "## Visualizaciones\n",
+    "\n",
+    "Tres gráficas, una por capa. Paleta sobria y profesional, adecuada para GitHub y portfolio."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ee9244ae",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# ── Configuración global de estilo ────────────────────────────────────────────\n",
+    "sns.set_theme(style=\"whitegrid\", font_scale=1.1)\n",
+    "AZUL     = \"#1A5276\"\n",
+    "NARANJA  = \"#CA6F1E\"\n",
+    "VERDE    = \"#1E8449\"\n",
+    "ROJO     = \"#922B21\"\n",
+    "GRIS     = \"#7F8C8D\"\n",
+    "\n",
+    "# ── Gráfica 1: Salario nominal vs salario real ────────────────────────────────\n",
+    "\n",
+    "AZUL    = \"#1A5276\"\n",
+    "NARANJA = \"#CA6F1E\"\n",
+    "\n",
+    "# Solo hasta 2025 — 2026 tiene IPC parcial (mayo), no comparable\n",
+    "df_graf1 = df_maestro[df_maestro[\"Año\"] <= 2025].copy()\n",
+    "años = df_graf1[\"Año\"].astype(int)\n",
+    "\n",
+    "fig, ax = plt.subplots(figsize=(12, 5))\n",
+    "\n",
+    "ax.plot(años, df_graf1[\"Salario_nominal\"] / 1e3, color=NARANJA, marker=\"o\", lw=2.2,\n",
+    "        label=\"Salario nominal (pesos corrientes)\")\n",
+    "ax.plot(años, df_graf1[\"Salario_real\"] / 1e3, color=AZUL, marker=\"s\", lw=2.2, ls=\"--\",\n",
+    "        label=\"Salario real (precios constantes)\")\n",
+    "\n",
+    "ax.set_title(\"Capa 1 — Salario nominal vs. salario real en Colombia (2016–2025)\",\n",
+    "             fontsize=13, fontweight=\"bold\", pad=14)\n",
+    "ax.set_xlabel(\"Año\")\n",
+    "ax.set_ylabel(\"Miles de pesos COP\")\n",
+    "ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f\"${x:,.0f}K\"))\n",
+    "ax.set_xticks(años)\n",
+    "ax.legend(loc=\"upper left\")\n",
+    "ax.grid(axis=\"y\", alpha=0.4)\n",
+    "\n",
+    "# Anotar primer y último punto\n",
+    "for col, color in [(\"Salario_nominal\", NARANJA), (\"Salario_real\", AZUL)]:\n",
+    "    v_ini = df_graf1.loc[df_graf1[\"Año\"] == 2016, col].values[0] / 1e3\n",
+    "    v_fin = df_graf1.loc[df_graf1[\"Año\"] == 2025, col].values[0] / 1e3\n",
+    "    ax.annotate(f\"${v_ini:,.0f}K\", xy=(2016, v_ini), xytext=(4, 8),\n",
+    "                textcoords=\"offset points\", fontsize=8.5, color=color, fontweight=\"bold\")\n",
+    "    ax.annotate(f\"${v_fin:,.0f}K\", xy=(2025, v_fin), xytext=(-68, 8),\n",
+    "                textcoords=\"offset points\", fontsize=8.5, color=color, fontweight=\"bold\")\n",
+    "\n",
+    "plt.tight_layout()\n",
+    "plt.savefig(\"datos_poder_adquisitivo/grafica_capa1_salario_real.png\", dpi=150, bbox_inches=\"tight\")\n",
+    "plt.show()\n",
+    "print(\"Guardada: datos_poder_adquisitivo/grafica_capa1_salario_real.png\")\n",
+    "años = df_maestro[\"Año\"].astype(int)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "58d78c0a",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "2226c6db",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# ── Gráfica 2: Excedente mensual ──────────────────────────────────────────────\n",
+    "fig, ax = plt.subplots(figsize=(11, 5))\n",
+    "\n",
+    "colores_barras = [VERDE if e > 0 else ROJO for e in df_maestro[\"Excedente\"]]\n",
+    "bars = ax.bar(años, df_maestro[\"Excedente\"] / 1e3, color=colores_barras,\n",
+    "              width=0.6, edgecolor=\"white\", linewidth=0.8)\n",
+    "\n",
+    "ax.axhline(0, color=\"black\", linewidth=1.2)\n",
+    "ax.set_title(\"Capa 2 — Excedente mensual tras cubrir la línea de pobreza (2016–2025)\",\n",
+    "             fontsize=13, fontweight=\"bold\", pad=14)\n",
+    "ax.set_xlabel(\"Año\")\n",
+    "ax.set_ylabel(\"Miles de pesos COP\")\n",
+    "ax.set_xticks(años)\n",
+    "ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f\"${x:,.0f}K\"))\n",
+    "ax.grid(axis=\"y\", alpha=0.4)\n",
+    "\n",
+    "for bar, val in zip(bars, df_maestro[\"Excedente\"] / 1e3):\n",
+    "    offset = 8 if val >= 0 else -18\n",
+    "    ax.text(bar.get_x() + bar.get_width() / 2, val + offset,\n",
+    "            f\"${val:,.0f}K\", ha=\"center\", va=\"bottom\", fontsize=7.5, fontweight=\"bold\")\n",
+    "\n",
+    "# Leyenda dinámica: solo muestra los colores que realmente aparecen en las barras\n",
+    "from matplotlib.patches import Patch\n",
+    "handles = []\n",
+    "if any(e > 0 for e in df_maestro[\"Excedente\"]):\n",
+    "    handles.append(Patch(color=VERDE, label=\"Excedente positivo (sobre línea de pobreza)\"))\n",
+    "if any(e <= 0 for e in df_maestro[\"Excedente\"]):\n",
+    "    handles.append(Patch(color=ROJO, label=\"Déficit (bajo línea de pobreza)\"))\n",
+    "ax.legend(handles=handles, loc=\"upper left\")\n",
+    "\n",
+    "plt.tight_layout()\n",
+    "plt.savefig(\"datos_poder_adquisitivo/grafica_capa2_excedente.png\", dpi=150, bbox_inches=\"tight\")\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "fa24fa78",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# ── Gráfica 3: Excedente semestral vs costos de matrícula ────────────────────\n",
+    "\n",
+    "AZUL    = \"#1A5276\"\n",
+    "GRIS    = \"#7F8C8D\"\n",
+    "NARANJA = \"#CA6F1E\"\n",
+    "ROJO    = \"#922B21\"\n",
+    "\n",
+    "matricula_publica_fuera    = 1_200_000\n",
+    "matricula_privada_general  = 8_500_000\n",
+    "matricula_privada_medicina = 25_000_000\n",
+    "\n",
+    "# Sin 2026 — IPC parcial\n",
+    "df_graf3 = df_maestro[df_maestro[\"Año\"] <= 2025].copy()\n",
+    "años     = df_graf3[\"Año\"].astype(int)\n",
+    "exc_sem  = df_graf3[\"Excedente_semestral\"] / 1e6\n",
+    "\n",
+    "fig, ax = plt.subplots(figsize=(13, 6))\n",
+    "\n",
+    "# Área y línea del excedente\n",
+    "ax.fill_between(años, exc_sem, alpha=0.15, color=AZUL)\n",
+    "ax.plot(años, exc_sem, color=AZUL, marker=\"o\", lw=2.2,\n",
+    "        label=\"Excedente semestral acumulable\")\n",
+    "\n",
+    "# Anotar cada punto\n",
+    "for a, v in zip(años, exc_sem):\n",
+    "    ax.annotate(f\"${v:.1f}M\", xy=(a, v),\n",
+    "                xytext=(0, 10), textcoords=\"offset points\",\n",
+    "                ha=\"center\", fontsize=7.5, color=AZUL, fontweight=\"bold\")\n",
+    "\n",
+    "# ── Etiqueta del excedente sobre la línea azul ────────────────────────────────\n",
+    "ax.text(2025.15, exc_sem.iloc[-1],\n",
+    "        \"Excedente semestral\\nacumulable\",\n",
+    "        color=AZUL, fontsize=8, fontweight=\"bold\",\n",
+    "        va=\"center\", ha=\"left\")\n",
+    "\n",
+    "# Referencias horizontales con etiqueta SOBRE la línea\n",
+    "referencias = [\n",
+    "    (\"Pública – Fuera de gratuidad\",  matricula_publica_fuera,   GRIS,    \"--\"),\n",
+    "    (\"Privada – Carrera general\",      matricula_privada_general,  NARANJA, \"-.\"),\n",
+    "    (\"Privada – Medicina\",             matricula_privada_medicina, ROJO,    \":\"),\n",
+    "]\n",
+    "for nombre, costo, color, ls in referencias:\n",
+    "    y = costo / 1e6\n",
+    "    ax.axhline(y, color=color, ls=ls, lw=1.8)\n",
+    "    ax.text(2025.15, y, f\"{nombre}\\n(${costo/1e6:.1f}M)\",\n",
+    "            color=color, fontsize=8, fontweight=\"bold\",\n",
+    "            va=\"center\", ha=\"left\")\n",
+    "\n",
+    "# Títulos y ejes\n",
+    "ax.set_title(\"Capa 3 — ¿Alcanza el excedente semestral para estudiar? (2016–2025)\",\n",
+    "             fontsize=13, fontweight=\"bold\", pad=14)\n",
+    "ax.set_xlabel(\"Año\")\n",
+    "ax.set_ylabel(\"Precio de matrículas (COP)\")\n",
+    "\n",
+    "# Eje Y limpio\n",
+    "ax.set_ylim(0.5, 28)\n",
+    "ax.yaxis.set_major_locator(plt.MultipleLocator(2))\n",
+    "ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f\"${x:.0f}M\"))\n",
+    "\n",
+    "ax.set_xticks(años)\n",
+    "ax.grid(axis=\"y\", alpha=0.3)\n",
+    "\n",
+    "# ── Leyenda arriba ─────────────────────────────────────────────────────────────\n",
+    "from matplotlib.lines import Line2D\n",
+    "from matplotlib.patches import Patch\n",
+    "\n",
+    "leyenda_elementos = [\n",
+    "    Line2D([0], [0], color=AZUL,    lw=2, marker=\"o\", label=\"Excedente semestral acumulable\"),\n",
+    "    Line2D([0], [0], color=GRIS,    lw=1.8, ls=\"--\",  label=\"Pública – Fuera de gratuidad ($1.2M)\"),\n",
+    "    Line2D([0], [0], color=NARANJA, lw=1.8, ls=\"-.\",  label=\"Privada – Carrera general ($8.5M)\"),\n",
+    "    Line2D([0], [0], color=ROJO,    lw=1.8, ls=\":\",   label=\"Privada – Medicina ($25M)\"),\n",
+    "]\n",
+    "ax.legend(handles=leyenda_elementos, loc=\"upper left\", fontsize=8.5)\n",
+    "\n",
+    "# Margen derecho para etiquetas sobre las líneas\n",
+    "plt.subplots_adjust(right=0.78)\n",
+    "\n",
+    "plt.tight_layout()\n",
+    "plt.savefig(\"datos_poder_adquisitivo/grafica_capa3_matricula.png\", dpi=150, bbox_inches=\"tight\")\n",
+    "plt.show()\n",
+    "print(\"Guardada: datos_poder_adquisitivo/grafica_capa3_matricula.png\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6348ee23",
+   "metadata": {},
+   "source": [
+    "## Tabla Maestra Final\n",
+    "\n",
+    "Todos los indicadores calculados en una sola vista."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "1235e9d9",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# ── Tabla Maestra Final ───────────────────────────────────────────────────────\n",
+    "\n",
+    "cols_final = [\n",
+    "    \"Año\", \"Salario_nominal\", \"Auxilio_transporte\", \"IPC\", \"Mes_IPC\",\n",
+    "    \"Salario_real\", \"Linea_pobreza\", \"Ingreso_total\",\n",
+    "    \"Excedente\", \"Excedente_semestral\"\n",
+    "]\n",
+    "\n",
+    "# Excluir 2026 — IPC parcial (solo hasta mayo), no comparable con años completos\n",
+    "df_final = df_maestro[cols_final].copy()\n",
+    "df_final = df_final[df_final[\"Año\"] <= 2025].reset_index(drop=True)\n",
+    "\n",
+    "# Renombrar columnas\n",
+    "display_cols = {\n",
+    "    \"Año\":                 \"Año\",\n",
+    "    \"Salario_nominal\":     \"Salario nominal\",\n",
+    "    \"Auxilio_transporte\":  \"Auxilio transporte\",\n",
+    "    \"IPC\":                 \"IPC (último mes)\",\n",
+    "    \"Mes_IPC\":             \"Mes IPC\",\n",
+    "    \"Salario_real\":        \"Salario real (precios constantes)\",\n",
+    "    \"Linea_pobreza\":       \"Línea de pobreza\",\n",
+    "    \"Ingreso_total\":       \"Ingreso total\",\n",
+    "    \"Excedente\":           \"Excedente mensual\",\n",
+    "    \"Excedente_semestral\": \"Excedente semestral\"\n",
+    "}\n",
+    "df_final_display = df_final.rename(columns=display_cols)\n",
+    "\n",
+    "# Guardar CSV sin 2026\n",
+    "df_final.to_csv(\"datos_poder_adquisitivo/tabla_maestra.csv\", index=False)\n",
+    "print(\"Tabla guardada (2016–2025) en datos_poder_adquisitivo/tabla_maestra.csv\")\n",
+    "print()\n",
+    "print(\"Nota: 2026 se excluye de esta tabla porque el IPC disponible es parcial\")\n",
+    "print(\"(dato hasta mayo 2026), lo que no permite una comparación rigurosa\")\n",
+    "print(\"con los años anteriores que tienen el año completo cerrado.\")\n",
+    "print()\n",
+    "\n",
+    "df_final_display.style.format({\n",
+    "    \"Salario nominal\":                   \"${:,.0f}\",\n",
+    "    \"Auxilio transporte\":                \"${:,.0f}\",\n",
+    "    \"IPC (último mes)\":                  \"{:.2f}\",\n",
+    "    \"Salario real (precios constantes)\": \"${:,.0f}\",\n",
+    "    \"Línea de pobreza\":                  \"${:,.0f}\",\n",
+    "    \"Ingreso total\":                     \"${:,.0f}\",\n",
+    "    \"Excedente mensual\":                 \"${:,.0f}\",\n",
+    "    \"Excedente semestral\":               \"${:,.0f}\"\n",
+    "})"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "878b82b3",
+   "metadata": {},
+   "source": [
+    "##### Conclusiones\n",
+    "\n",
+    "### ¿El salario mínimo en Colombia ha mejorado el poder adquisitivo entre 2016 y 2025?\n",
+    "\n",
+    "**Capa 1 — Salario real:**  \n",
+    "El salario nominal creció sustancialmente en la última década, pasando de $689.455 en 2016 a $1.423.500 en 2025 — un aumento de aproximadamente 106% en pesos corrientes. Sin embargo, cuando se descuenta la inflación, el salario real muestra un crecimiento significativamente más modesto. El período 2021-2023 fue especialmente duro: la inflación superó ampliamente los aumentos nominales, erosionando el poder de compra. Los años 2024-2025 muestran una recuperación parcial, impulsada por aumentos del salario mínimo decretados por encima de la inflación.\n",
+    "\n",
+    "**Capa 2 — ¿Vivir o sobrevivir?**  \n",
+    "El ingreso total (salario + auxilio de transporte) se ha mantenido por encima de la línea de pobreza en la mayor parte del período, pero el excedente es pequeño y vulnerable. En los años de alta inflación (2022-2023), el margen se redujo considerablemente. Una persona que vive del salario mínimo está técnicamente sobre la línea de pobreza monetaria, pero con un colchón estrecho que no tolera imprevistos.\n",
+    "\n",
+    "**Capa 3 — ¿Invertir en el futuro?**  \n",
+    "El excedente semestral no alcanza, en ningún año del período, para pagar una matrícula en universidad privada (ni siquiera en las más económicas). La universidad pública con política de gratuidad es, en la práctica, la **única vía realista** para que alguien que depende del salario mínimo pueda acceder a educación superior sin endeudarse. Esto no es una observación moral — es el resultado directo de los números: la brecha entre el excedente acumulable y el costo de matrícula privada es estructural y se mantiene en todo el período analizado.\n",
+    "\n",
+    "**Respuesta a la pregunta central:**  \n",
+    "El salario mínimo en Colombia *sí ha mejorado* en términos nominales, pero el avance en poder adquisitivo real es frágil y desigual a lo largo del tiempo. El colombiano promedio que gana el mínimo no está mejorando su posición económica al ritmo que los titulares de cada enero sugieren. Está sobreviviendo con un margen estrecho, y la posibilidad de invertir en educación superior privada permanece fuera de alcance durante todo el período 2016-2025.\n",
+    "\n",
+    "---\n",
+    "*Fuentes: DANE (IPC, Líneas de pobreza), Banrep / Ministerio del Trabajo (SMMLV y Auxilio de transporte), datos de matrículas universitarias Colombia 2024.*  \n",
+    "*Elaborado por: Mauxy Salcedo — Proyecto de portafolio, 2026.*"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.14.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
