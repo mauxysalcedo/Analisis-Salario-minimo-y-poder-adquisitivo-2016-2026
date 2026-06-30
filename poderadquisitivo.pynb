@@ -5000,9 +5000,11 @@
    ]
   },
   {
-   "cell_type": "markdown",
+   "cell_type": "code",
+   "execution_count": null,
    "id": "878b82b3",
    "metadata": {},
+   "outputs": [],
    "source": [
     "##### Conclusiones\n",
     "\n",
