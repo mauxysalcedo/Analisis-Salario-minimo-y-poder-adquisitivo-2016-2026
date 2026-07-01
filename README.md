@@ -22,15 +22,15 @@ Período: 2016–2025 · Población de referencia: trabajador formal que gana ex
 
 ## Las tres capas del análisis
 
-# Capa 1 — Salario real. El salario nominal subió 106%, pero descontando inflación, el salario real solo creció 26%. Respuesta: sí mejoró, pero mucho menos de lo que parece.
+Capa 1 — Salario real. El salario nominal subió 106%, pero descontando inflación, el salario real solo creció 26%. Respuesta: sí mejoró, pero mucho menos de lo que parece.
 
 <img width="1767" height="716" alt="grafica_capa1_salario_real" src="https://github.com/user-attachments/assets/93b4879d-e38f-44e0-bbb3-964f30f34ac4" />
 
-# Capa 2 — ¿Vivir o sobrevivir? El ingreso se mantuvo sobre la línea de pobreza, pero el excedente es frágil — y se calcula para una sola persona, cuando el hogar promedio colombiano tiene 2,82 integrantes (DANE, 2025). Respuesta: técnicamente por encima de la pobreza; en la práctica familiar, el colchón es demasiado estrecho.
+ Capa 2 — ¿Vivir o sobrevivir? El ingreso se mantuvo sobre la línea de pobreza, pero el excedente es frágil — y se calcula para una sola persona, cuando el hogar promedio colombiano tiene 2,82 integrantes (DANE, 2025). Respuesta: técnicamente por encima de la pobreza; en la práctica familiar, el colchón es demasiado estrecho.
 
 <img width="1617" height="716" alt="grafica_capa2_excedente" src="https://github.com/user-attachments/assets/f9e2b98e-eeef-4ef0-9659-26cb83853ee1" />
 
-# Capa 3 — ¿Invertir en el futuro? En ningún año del período el excedente semestral alcanzó para cubrir una matrícula privada (~$8.500.000). Respuesta: no alcanza. La universidad pública gratuita no es una preferencia — es la única puerta abierta.
+Capa 3 — ¿Invertir en el futuro? En ningún año del período el excedente semestral alcanzó para cubrir una matrícula privada (~$8.500.000). Respuesta: no alcanza. La universidad pública gratuita no es una preferencia — es la única puerta abierta.
 
 <img width="1908" height="866" alt="grafica_capa3_matricula" src="https://github.com/user-attachments/assets/aba6ab38-e6bc-4752-a6f1-2e75121dc026" />
 
